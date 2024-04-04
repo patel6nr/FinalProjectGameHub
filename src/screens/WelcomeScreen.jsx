@@ -1,4 +1,5 @@
 import {PropTypes} from 'prop-types';
+import React from 'react';
 
 export const WelcomeScreen = ({ name, onNameChange, onGameStart }) => {
 
@@ -35,8 +36,11 @@ export const WelcomeScreen = ({ name, onNameChange, onGameStart }) => {
     </div>
   );
 };
+
 WelcomeScreen.propTypes = {
   name: PropTypes.string.isRequired,
   onNameChange: PropTypes.func.isRequired,
   onGameStart: PropTypes.func.isRequired
 }
+
+export default WelcomeScreen;
