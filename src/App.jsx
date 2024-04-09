@@ -3,6 +3,7 @@ import './App.css';
 import Navigation from '../Components/Navigation'
 import HomePage from '../Routes/HomePage';
 import RPSPage from '../Routes/RPSPage';
+import TicTacToePage from '../Routes/TicTacToePage';
 
 function App() {
 
@@ -12,7 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/Rps" element={<RPSPage />} />
-
+        <Route path="/TicTacToe" element={<TicTacToePage />} />
       </Routes>
     </Router>
   )
