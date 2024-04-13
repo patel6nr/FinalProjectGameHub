@@ -4,6 +4,7 @@ import Navigation from '../Components/Navigation'
 import HomePage from '../Routes/HomePage';
 import RPSPage from '../Routes/RPSPage';
 import TicTacToePage from '../Routes/TicTacToePage';
+import SnakeGame from '../Routes/SnakeGame';
 
 function App() {
 
@@ -14,6 +15,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/Rps" element={<RPSPage />} />
         <Route path="/TicTacToe" element={<TicTacToePage />} />
+        <Route path="/Snake" element={<SnakeGame />} />
       </Routes>
     </Router>
   )
