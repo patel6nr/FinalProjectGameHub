@@ -9,7 +9,6 @@ class SnakeGame extends React.Component {
 
       this.handleKeyDown = this.handleKeyDown.bind(this)
 
-      // Initializing the component's state
     this.state = {
       width: 0,
       height: 0,
@@ -31,11 +30,10 @@ class SnakeGame extends React.Component {
     }
   }
 
-  // Component lifecycle method: runs after the component is mounted
   componentDidMount() {
-    this.initGame() //Initialize the game
-    window.addEventListener('keydown', this.handleKeyDown)// Add keydown event listener
-    this.gameLoop() // Start the game loop
+    this.initGame()
+    window.addEventListener('keydown', this.handleKeyDown)
+    this.gameLoop()
   }
 
   initGame() {
@@ -76,7 +74,6 @@ class SnakeGame extends React.Component {
         blockHeight
     }
 
-    // Update the component state with initialized values
     this.setState({
       width,
       height,
@@ -88,17 +85,16 @@ class SnakeGame extends React.Component {
     })
   }
 
-  //  Game loop function using setTimeout
   gameLoop() {
     let timeoutId = setTimeout(() => {
       if (!this.state.isGameOver) {
-        this.moveSnake() // Move the snake
-        this.tryToEatSnake() // Check if the snake eats itself
-        this.tryToEatApple() // check if the snake eats the apple
+        this.moveSnake()
+        this.tryToEatSnake()
+        this.tryToEatApple()
         this.setState({ directionChanged: false })
       }
 
-      this.gameLoop() 
+      this.gameLoop()
     }, this.state.gameLoopTimeout)
 
     this.setState({ timeoutId })
@@ -109,13 +105,14 @@ class SnakeGame extends React.Component {
     window.removeEventListener('keydown', this.handleKeyDown)
   }
 
-  // Reset the game when game is over
   resetGame() {
     let width = this.state.width
     let height = this.state.height
     let blockWidth = this.state.blockWidth
     let blockHeight = this.state.blockHeight
     let apple = this.state.apple
+
+    // snake reset
     let snake = []
     let Xpos = width / 2
     let Ypos = height / 2
@@ -143,7 +140,6 @@ class SnakeGame extends React.Component {
         blockHeight
     }
 
-    // Update component state with reset values
     this.setState({
       snake,
       apple,
@@ -158,7 +154,6 @@ class SnakeGame extends React.Component {
     })
   }
 
-  // Generate a random color
   getRandomColor() {
     let hexa = '0123456789ABCDEF'
     let color = '#'
@@ -166,16 +161,13 @@ class SnakeGame extends React.Component {
     return color
   }
 
-  // Move snake based on current direction
   moveSnake() {
     let snake = this.state.snake
     let previousPartX = this.state.snake[0].Xpos
     let previousPartY = this.state.snake[0].Ypos
     let tmpPartX = previousPartX
     let tmpPartY = previousPartY
-    this.moveHead() // Move the snake's head
-
-    // Update the snake's body parts
+    this.moveHead()
     for (let i = 1; i < snake.length; i++) {
       tmpPartX = snake[i].Xpos
       tmpPartY = snake[i].Ypos
@@ -187,7 +179,6 @@ class SnakeGame extends React.Component {
     this.setState({ snake })
   }
 
-  // Check if the snake eats the apple
   tryToEatApple() {
     let snake = this.state.snake
     let apple = this.state.apple
@@ -345,7 +336,6 @@ class SnakeGame extends React.Component {
     this.setState({ directionChanged: true })
   }
 
-  // Snake movement functions
   goLeft() {
     let newDirection = this.state.direction === 'right' ? 'right' : 'left'
     this.setState({ direction: newDirection })
@@ -367,7 +357,7 @@ class SnakeGame extends React.Component {
   }
 
   render() {
-    // Game over state, render the GameOver component
+    // Game over
     if (this.state.isGameOver) {
       return (
         <GameOver
@@ -380,7 +370,6 @@ class SnakeGame extends React.Component {
       )
     }
 
-    // Render game board with snake, apple and score
     return (
       <div>
           <h1>Snake Game</h1>

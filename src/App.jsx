@@ -5,6 +5,7 @@ import HomePage from '../Routes/HomePage';
 import RPSPage from '../Routes/RPSPage';
 import TicTacToePage from '../Routes/TicTacToePage';
 import SnakeGame from '../Routes/SnakeGame';
+import Wordle from '../Routes/Wordle';
 
 function App() {
 
@@ -16,6 +17,7 @@ function App() {
         <Route path="/Rps" element={<RPSPage />} />
         <Route path="/TicTacToe" element={<TicTacToePage />} />
         <Route path="/Snake" element={<SnakeGame />} />
+        <Route path="/Wordle" element={<Wordle />} />
       </Routes>
     </Router>
   )
