@@ -30,6 +30,7 @@ export const WelcomeScreen = ({ name, onNameChange, onGameStart }) => {
           className="btn btn-primary" 
           id="start-game-button" type="button" 
           onClick={onStartGameClick}>
+            
           Start Game!
         </button>
       </form>
