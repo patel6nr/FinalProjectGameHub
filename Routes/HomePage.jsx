@@ -1,16 +1,13 @@
-// File: routes/HomePage.js
-
 import React from 'react';
-import BgGif from "./../src/assets/bg-gif.gif"
+
 
 const HomePage = () => {
     return (
         <section className='Home'>
-            <h1>Welcome to the Home Page</h1>
-            <p>This is a simple heading and paragraph for the home page.</p>
-            <div className="gif">
-                <img src={BgGif} alt="" />
-            </div>
+            <h2>Welcome to the Game Hub</h2>
+            <p>By Nirav Patel & Aminov, Makhsudjon </p>
+            <p>Embrace your inner Gamer</p>
+            <p>An infinite experience in one place together on GameHub</p>
         </section>
     );
 }

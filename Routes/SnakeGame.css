@@ -1,37 +1,55 @@
-#GameBoard {
+/* SnakeGame.css */
+
+/* Game Board */
+.GameBoard {
   position: relative;
-  margin: auto;
-  border-style: solid;
-  height: 800px;
-  width: 800px;
+  border: 2px solid #000;
+  margin: 0 auto;
+  overflow: hidden;
 }
 
-#GameBoard .Block {
+/* Snake Part */
+.SnakePart {
   position: absolute;
+  background-color: #00f; /* Blue color for snake */
 }
 
-#GameBoard #GameOver {
+/* Apple */
+.Apple {
+  position: absolute;
+  background-color: #f00; /* Red color for apple */
+}
+
+/* Game Over Screen */
+.game-over {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
-  height: 100%;
-  flex-direction: column;
-  display: flex;
-  justify-content: space-around;
+  font-family: Arial, sans-serif;
 }
 
-#GameBoard #Score {
-  position: relative;
-  top: 105%;
-  text-align: center;
-  font-weight: bold;
+/* Button */
+.game-over button {
+  padding: 10px 20px;
+  margin-top: 20px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
 }
 
-#GameBoard #GameOverText {
-  color: #ca0000;
-  font-weight: bold;
-  text-decoration-line: underline;
+.game-over button:hover {
+  background-color: #0056b3;
 }
 
-#GameBoard #PressSpaceText {
-  color: #2e7ecb;
-  font-weight: bold;
+.Score {
+  position: absolute;
+  top: -30px;
+  right: 5px; /* Adjust this value based on your layout */
+  font-size: 20px;
+  color: #000;
 }

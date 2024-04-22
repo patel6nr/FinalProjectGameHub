@@ -1,429 +1,198 @@
-import React from 'react'
-import './SnakeGame.css'
-import GameOver from './GameOver.jsx'
+import React, { useState, useEffect, useCallback } from 'react';
+import './SnakeGame.css';
 
-class SnakeGame extends React.Component {
+// Component to display game over screen
+const GameOver = ({ width, height, score, onRestart }) => {
+  return (
+    <div className="game-over-screen">
+      <h2>Game Over!</h2>
+      <p>Score: {score}</p>
+      <button onClick={onRestart}>Restart Game</button>
+    </div>
+  );
+};
 
-    constructor(props) {
-      super(props)
+// Main SnakeGame component
+const SnakeGame = () => {
+  const [width, setWidth] = useState(400);
+  const [height, setHeight] = useState(400);
+  const [blockWidth, setBlockWidth] = useState(20);
+  const [blockHeight, setBlockHeight] = useState(20);
+  const [snake, setSnake] = useState([]);
+  const [apple, setApple] = useState({});
+  const [direction, setDirection] = useState('right');
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [score, setScore] = useState(0);
 
-      this.handleKeyDown = this.handleKeyDown.bind(this)
+  // Function to get random position for apple
+  const getRandomPosition = (max, blockSize) => {
+    return Math.floor(Math.random() * (max / blockSize)) * blockSize;
+  };
 
-      // Initializing the component's state
-    this.state = {
-      width: 0,
-      height: 0,
-      blockWidth: 0,
-      blockHeight: 0,
-      gameLoopTimeout: 50,
-      timeoutId: 0,
-      startSnakeSize: 0,
-      snake: [],
-      apple: {},
-      direction: 'right',
-      directionChanged: false,
-      isGameOver: false,
-      snakeColor: this.props.snakeColor || this.getRandomColor(),
-      appleColor: this.props.appleColor || this.getRandomColor(),
-      score: 0,
-      highScore: Number(localStorage.getItem('snakeHighScore')) || 0,
-      newHighScore: false,
-    }
-  }
+  // Function to initialize game
+  const initGame = useCallback(() => {
+    const newSnake = [];
+    const startX = Math.floor(width / 2);
+    const startY = Math.floor(height / 2);
+    const startSnakeSize = 6;
 
-  // Component lifecycle method: runs after the component is mounted
-  componentDidMount() {
-    this.initGame() //Initialize the game
-    window.addEventListener('keydown', this.handleKeyDown)// Add keydown event listener
-    this.gameLoop() // Start the game loop
-  }
-
-  initGame() {
-    // Game size initialization
-    let percentageWidth = this.props.percentageWidth || 40
-    let width =
-      document.getElementById('GameBoard').parentElement.offsetWidth *
-      (percentageWidth / 100)
-    width -= width % 30
-    if (width < 30) width = 30
-    let height = (width / 3) * 2
-    let blockWidth = width / 30
-    let blockHeight = height / 20
-
-    // snake initialization
-    let startSnakeSize = this.props.startSnakeSize || 6
-    let snake = []
-    let Xpos = width / 2
-    let Ypos = height / 2
-    let snakeHead = { Xpos: width / 2, Ypos: height / 2 }
-    snake.push(snakeHead)
-    for (let i = 1; i < startSnakeSize; i++) {
-      Xpos -= blockWidth
-      let snakePart = { Xpos: Xpos, Ypos: Ypos }
-      snake.push(snakePart)
+    //Initialize snake in the middle of the game board
+    for (let i = 0; i < startSnakeSize; i++) {
+      newSnake.push({ Xpos: startX - i * blockWidth, Ypos: startY });
     }
 
-    // apple position initialization
-    let appleXpos =
-      Math.floor(Math.random() * ((width - blockWidth) / blockWidth + 1)) *
-      blockWidth
-    let appleYpos =
-      Math.floor(Math.random() * ((height - blockHeight) / blockHeight + 1)) *
-      blockHeight
-    while (appleYpos === snake[0].Ypos) {
-      appleYpos =
-        Math.floor(Math.random() * ((height - blockHeight) / blockHeight + 1)) *
-        blockHeight
+    // Initialize apple at random position
+    const newAppleX = getRandomPosition(width, blockWidth);
+    const newAppleY = getRandomPosition(height, blockHeight);
+
+    // Set the initial game state
+    setSnake(newSnake);
+    setApple({ Xpos: newAppleX, Ypos: newAppleY });
+    setIsGameOver(false);
+    setScore(0);
+  }, [width, height, blockWidth, blockHeight]);
+
+  // Effect to set up initial game state and keydown event listener
+  useEffect(() => {
+    initGame();
+    const keydownHandler = (event) => handleKeyDown(event);
+    window.addEventListener('keydown', keydownHandler);
+    return () => {
+      window.removeEventListener('keydown', keydownHandler);
+    };
+  }, [initGame]);
+
+  //FUnction to handle keydown events
+  const handleKeyDown = (event) => {
+    if (isGameOver && event.keyCode === 32) {
+      initGame();
+      return;
     }
 
-    // Update the component state with initialized values
-    this.setState({
-      width,
-      height,
-      blockWidth,
-      blockHeight,
-      startSnakeSize,
-      snake,
-      apple: { Xpos: appleXpos, Ypos: appleYpos },
-    })
-  }
-
-  //  Game loop function using setTimeout
-  gameLoop() {
-    let timeoutId = setTimeout(() => {
-      if (!this.state.isGameOver) {
-        this.moveSnake() // Move the snake
-        this.tryToEatSnake() // Check if the snake eats itself
-        this.tryToEatApple() // check if the snake eats the apple
-        this.setState({ directionChanged: false })
-      }
-
-      this.gameLoop() 
-    }, this.state.gameLoopTimeout)
-
-    this.setState({ timeoutId })
-  }
-
-  componentWillUnmount() {
-    clearTimeout(this.state.timeoutId)
-    window.removeEventListener('keydown', this.handleKeyDown)
-  }
-
-  // Reset the game when game is over
-  resetGame() {
-    let width = this.state.width
-    let height = this.state.height
-    let blockWidth = this.state.blockWidth
-    let blockHeight = this.state.blockHeight
-    let apple = this.state.apple
-    let snake = []
-    let Xpos = width / 2
-    let Ypos = height / 2
-    let snakeHead = { Xpos: width / 2, Ypos: height / 2 }
-    snake.push(snakeHead)
-    for (let i = 1; i < this.state.startSnakeSize; i++) {
-      Xpos -= blockWidth
-      let snakePart = { Xpos: Xpos, Ypos: Ypos }
-      snake.push(snakePart)
-    }
-
-    // apple position reset
-    apple.Xpos =
-      Math.floor(Math.random() * ((width - blockWidth) / blockWidth + 1)) *
-      blockWidth
-    apple.Ypos =
-      Math.floor(Math.random() * ((height - blockHeight) / blockHeight + 1)) *
-      blockHeight
-    while (this.isAppleOnSnake(apple.Xpos, apple.Ypos)) {
-      apple.Xpos =
-        Math.floor(Math.random() * ((width - blockWidth) / blockWidth + 1)) *
-        blockWidth
-      apple.Ypos =
-        Math.floor(Math.random() * ((height - blockHeight) / blockHeight + 1)) *
-        blockHeight
-    }
-
-    // Update component state with reset values
-    this.setState({
-      snake,
-      apple,
-      direction: 'right',
-      directionChanged: false,
-      isGameOver: false,
-      gameLoopTimeout: 50,
-      snakeColor: this.getRandomColor(),
-      appleColor: this.getRandomColor(),
-      score: 0,
-      newHighScore: false,
-    })
-  }
-
-  // Generate a random color
-  getRandomColor() {
-    let hexa = '0123456789ABCDEF'
-    let color = '#'
-    for (let i = 0; i < 6; i++) color += hexa[Math.floor(Math.random() * 16)]
-    return color
-  }
-
-  // Move snake based on current direction
-  moveSnake() {
-    let snake = this.state.snake
-    let previousPartX = this.state.snake[0].Xpos
-    let previousPartY = this.state.snake[0].Ypos
-    let tmpPartX = previousPartX
-    let tmpPartY = previousPartY
-    this.moveHead() // Move the snake's head
-
-    // Update the snake's body parts
-    for (let i = 1; i < snake.length; i++) {
-      tmpPartX = snake[i].Xpos
-      tmpPartY = snake[i].Ypos
-      snake[i].Xpos = previousPartX
-      snake[i].Ypos = previousPartY
-      previousPartX = tmpPartX
-      previousPartY = tmpPartY
-    }
-    this.setState({ snake })
-  }
-
-  // Check if the snake eats the apple
-  tryToEatApple() {
-    let snake = this.state.snake
-    let apple = this.state.apple
-
-    // if the snake's head is on an apple
-    if (snake[0].Xpos === apple.Xpos && snake[0].Ypos === apple.Ypos) {
-      let width = this.state.width
-      let height = this.state.height
-      let blockWidth = this.state.blockWidth
-      let blockHeight = this.state.blockHeight
-      let newTail = { Xpos: apple.Xpos, Ypos: apple.Ypos }
-      let highScore = this.state.highScore
-      let newHighScore = this.state.newHighScore
-      let gameLoopTimeout = this.state.gameLoopTimeout
-
-      // increase snake size
-      snake.push(newTail)
-
-      // create another apple
-      apple.Xpos =
-        Math.floor(Math.random() * ((width - blockWidth) / blockWidth + 1)) *
-        blockWidth
-      apple.Ypos =
-        Math.floor(Math.random() * ((height - blockHeight) / blockHeight + 1)) *
-        blockHeight
-      while (this.isAppleOnSnake(apple.Xpos, apple.Ypos)) {
-        apple.Xpos =
-          Math.floor(Math.random() * ((width - blockWidth) / blockWidth + 1)) *
-          blockWidth
-        apple.Ypos =
-          Math.floor(
-            Math.random() * ((height - blockHeight) / blockHeight + 1)
-          ) * blockHeight
-      }
-
-      // increment high score if needed
-      if (this.state.score === highScore) {
-        highScore++
-        localStorage.setItem('snakeHighScore', highScore)
-        newHighScore = true
-      }
-
-      // decrease the game loop timeout
-      if (gameLoopTimeout > 25) gameLoopTimeout -= 0.5
-
-      this.setState({
-        snake,
-        apple,
-        score: this.state.score + 1,
-        highScore,
-        newHighScore,
-        gameLoopTimeout,
-      })
-    }
-  }
-
-  tryToEatSnake() {
-    let snake = this.state.snake
-
-    for (let i = 1; i < snake.length; i++) {
-      if (snake[0].Xpos === snake[i].Xpos && snake[0].Ypos === snake[i].Ypos)
-        this.setState({ isGameOver: true })
-    }
-  }
-
-  isAppleOnSnake(appleXpos, appleYpos) {
-    let snake = this.state.snake
-    for (let i = 0; i < snake.length; i++) {
-      if (appleXpos === snake[i].Xpos && appleYpos === snake[i].Ypos)
-        return true
-    }
-    return false
-  }
-
-  moveHead() {
-    switch (this.state.direction) {
-      case 'left':
-        this.moveHeadLeft()
-        break
-      case 'up':
-        this.moveHeadUp()
-        break
-      case 'right':
-        this.moveHeadRight()
-        break
-      default:
-        this.moveHeadDown()
-    }
-  }
-
-  moveHeadLeft() {
-    let width = this.state.width
-    let blockWidth = this.state.blockWidth
-    let snake = this.state.snake
-    snake[0].Xpos =
-      snake[0].Xpos <= 0 ? width - blockWidth : snake[0].Xpos - blockWidth
-    this.setState({ snake })
-  }
-
-  moveHeadUp() {
-    let height = this.state.height
-    let blockHeight = this.state.blockHeight
-    let snake = this.state.snake
-    snake[0].Ypos =
-      snake[0].Ypos <= 0 ? height - blockHeight : snake[0].Ypos - blockHeight
-    this.setState({ snake })
-  }
-
-  moveHeadRight() {
-    let width = this.state.width
-    let blockWidth = this.state.blockWidth
-    let snake = this.state.snake
-    snake[0].Xpos =
-      snake[0].Xpos >= width - blockWidth ? 0 : snake[0].Xpos + blockWidth
-    this.setState({ snake })
-  }
-
-  moveHeadDown() {
-    let height = this.state.height
-    let blockHeight = this.state.blockHeight
-    let snake = this.state.snake
-    snake[0].Ypos =
-      snake[0].Ypos >= height - blockHeight ? 0 : snake[0].Ypos + blockHeight
-    this.setState({ snake })
-  }
-
-  handleKeyDown(event) {
-    // if spacebar is pressed to run a new game
-    if (this.state.isGameOver && event.keyCode === 32) {
-      this.resetGame()
-      return
-    }
-
-    if (this.state.directionChanged) return
-
+    // Change direction of the snake based on key press
     switch (event.keyCode) {
       case 37:
       case 65:
-        this.goLeft()
-        break
+        setDirection('left');    
+        break;
       case 38:
       case 87:
-        this.goUp()
-        break
+        setDirection('up');
+        break;
       case 39:
       case 68:
-        this.goRight()
-        break
+        setDirection('right');
+        break;
       case 40:
       case 83:
-        this.goDown()
-        break
+        setDirection('down');
+        break;
       default:
+        break;
     }
-    this.setState({ directionChanged: true })
-  }
+  };
 
-  // Snake movement functions
-  goLeft() {
-    let newDirection = this.state.direction === 'right' ? 'right' : 'left'
-    this.setState({ direction: newDirection })
-  }
+  // Function to move the snake
+  const moveSnake = () => {
+    if (isGameOver) return;
 
-  goUp() {
-    let newDirection = this.state.direction === 'down' ? 'down' : 'up'
-    this.setState({ direction: newDirection })
-  }
+    const newSnake = [...snake];
+    const head = newSnake[0];
+    let newHead = { ...head };
 
-  goRight() {
-    let newDirection = this.state.direction === 'left' ? 'left' : 'right'
-    this.setState({ direction: newDirection })
-  }
-
-  goDown() {
-    let newDirection = this.state.direction === 'up' ? 'up' : 'down'
-    this.setState({ direction: newDirection })
-  }
-
-  render() {
-    // Game over state, render the GameOver component
-    if (this.state.isGameOver) {
-      return (
-        <GameOver
-          width={this.state.width}
-          height={this.state.height}
-          highScore={this.state.highScore}
-          newHighScore={this.state.newHighScore}
-          score={this.state.score}
-        />
-      )
+    // Move the head of the snake based on the current direction
+    switch (direction) {
+      case 'left':
+        newHead.Xpos = (head.Xpos - blockWidth + width) % width;
+        break;
+      case 'up':
+        newHead.Ypos = (head.Ypos - blockHeight + height) % height;
+        break;
+      case 'right':
+        newHead.Xpos = (head.Xpos + blockWidth) % width;
+        break;
+      case 'down':
+        newHead.Ypos = (head.Ypos + blockHeight) % height;
+        break;
+      default:
+        break;
     }
 
-    // Render game board with snake, apple and score
-    return (
-      <div>
-          <h1>Snake Game</h1>
+    // Check for collision with self
+    if (isSnakeCollision(newHead.Xpos, newHead.Ypos)) {
+      setIsGameOver(true);
+      return;
+    }
+
+    // Add the new head to the snake
+    newSnake.unshift(newHead);
+    if (newHead.Xpos === apple.Xpos && newHead.Ypos === apple.Ypos) {
+    //if the snake eats the apple, increase the score and place a new apple at random position
+      setScore(score + 1);
+      setApple({
+        Xpos: getRandomPosition(width, blockWidth),
+        Ypos: getRandomPosition(height, blockHeight),
+      });
+    } else {
+      // If the snake does not eat the apple, remove the tail
+      newSnake.pop();
+    }
+
+    setSnake(newSnake);
+  };
+
+  // Function to check if the snake collides with itself
+  const isSnakeCollision = (x, y) => {
+    for (let i = 1; i < snake.length; i++) {
+      if (snake[i].Xpos === x && snake[i].Ypos === y) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Effect to move the snake at regular intervals
+  useEffect(() => {
+    const interval = setInterval(moveSnake, 150);
+    return () => clearInterval(interval);
+  }, [snake]); // Restart interval on snake change (moveSnake dependencies)
+
+  // Render the game board and the game over screen if the game is over
+  return (
+    <div style={{ position: 'relative' }}>
+      <div className="Score">Score: {score}</div>
+      <div
+        id="GameBoard"
+        className="GameBoard"
+        style={{ width: width, height: height }}
+      >
+        {snake.map((part, index) => (
           <div
-              id='GameBoard'
-              style={{
-                  width: this.state.width,
-                  height: this.state.height,
-                  borderWidth: this.state.width / 50,
-              }}>
-              {this.state.snake.map((snakePart, index) => {
-                  return (
-                      <div
-                          key={index}
-                          className='Block'
-                          style={{
-                              width: this.state.blockWidth,
-                              height: this.state.blockHeight,
-                              left: snakePart.Xpos,
-                              top: snakePart.Ypos,
-                              background: this.state.snakeColor,
-                          }}
-                      />
-                  )
-              })}
-              <div
-                  className='Block'
-                  style={{
-                      width: this.state.blockWidth,
-                      height: this.state.blockHeight,
-                      left: this.state.apple.Xpos,
-                      top: this.state.apple.Ypos,
-                      background: this.state.appleColor,
-                  }}
-              />
-              <div id='Score' style={{ fontSize: this.state.width / 20 }}>
-                  HIGH-SCORE: {this.state.highScore}&ensp;&ensp;&ensp;&ensp;SCORE:{' '}
-                  {this.state.score}
-              </div>
-          </div>
+            key={index}
+            className="SnakePart"
+            style={{
+              left: part.Xpos,
+              top: part.Ypos,
+              width: blockWidth,
+              height: blockHeight,
+            }}
+          />
+        ))}
+        <div
+          className="Apple"
+          style={{
+            left: apple.Xpos,
+            top: apple.Ypos,
+            width: blockWidth,
+            height: blockHeight,
+          }}
+        />
       </div>
-  )
-}
+      {isGameOver && (
+        <GameOver width={width} height={height} score={score} onRestart={initGame} />
+      )}
+    </div>
+  );
 }
 
-export default SnakeGame
+export default SnakeGame;

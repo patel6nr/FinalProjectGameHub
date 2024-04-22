@@ -17,9 +17,6 @@ const Wordle = () => {
     }, [setSolution])
     return (
         <Fragment>
-            <header>
-                <h1>Wordle</h1>
-            </header>
             <main>
                 {solution && <WordleComponent solution={solution} />}
 
